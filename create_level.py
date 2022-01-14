@@ -100,8 +100,8 @@ if __name__ == '__main__':
     running = True
     board.render(screen)
 
-    checkbox_stena = checkbox.Checkbox(screen, 750, 100, "wall", activated=True)
-    checkbox_korobka = checkbox.Checkbox(screen, 750, 150, "box")
+    checkbox_stena = checkbox.Checkbox(screen, 750, 100, 12, 12, "wall", activated=True)
+    checkbox_korobka = checkbox.Checkbox(screen, 750, 150, 12, 12, "box")
     checkbox_list = list()
     checkbox_list.append(checkbox_korobka)
     checkbox_list.append(checkbox_stena)
@@ -129,7 +129,8 @@ if __name__ == '__main__':
         text_y = 148
         screen.blit(text, (text_x, text_y))
 
-        # button_clear = button.Button(screen)
+        button_clear = button.Button(screen, 790, 250, 93, 28, "Сбросить")
+        button_save = button.Button(screen, 915, 250, 102, 28, "Сохранить")
         #
 
         for event in pygame.event.get():
@@ -143,9 +144,13 @@ if __name__ == '__main__':
                         board.get_click(event.pos, btn.name)
             checkbox_stena.update(event, checkbox_list)
             checkbox_korobka.update(event, checkbox_list)
-            print(board.board)
+            button_save.update(event)
+            button_clear.update(event)
+            # print(board.board)
 
         all_sprites.draw(screen)
-        checkbox_stena.render_checkbox()
-        checkbox_korobka.render_checkbox()
+        checkbox_stena.render()
+        checkbox_korobka.render()
+        button_clear.render()
+        button_save.render()
         pygame.display.flip()

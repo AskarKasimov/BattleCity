@@ -3,7 +3,7 @@ import button
 
 
 class Checkbox(button.Button):
-    def render_checkbox(self):
+    def render(self):
         if self.checked:
             pg.draw.rect(self.surface, self.color, self.checkbox_obj)
             pg.draw.rect(self.surface, (0, 0, 0), self.checkbox_outline, 1)
