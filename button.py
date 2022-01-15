@@ -16,16 +16,20 @@ class Button:
         self.name = name
 
     def render(self):
+
         if self.checked:
+            print("GGG")
             font = pg.font.Font(None, 24)
             text = font.render(self.name, True, (0, 0, 0))
             text_x = self.x
             text_y = self.y
             text_w = text.get_width()
             text_h = text.get_height()
-            pg.draw.rect(self.surface, (255, 0, 0), (text_x - 7, text_y - 7,
-                                                    text_w + 16, text_h + 12), 0)
-            print("!!")
+            rect = pg.draw.rect(self.surface, (255, 0, 0), (text_x - 7, text_y - 7,
+                                                            text_w + 16, text_h + 12), 0)
+            self.checkbox_obj = pg.Rect(rect.x, rect.y, rect.width, rect.height)
+            self.surface.blit(text, (text_x, text_y))
+
         else:
             font = pg.font.Font(None, 24)
             text = font.render(self.name, True, (0, 0, 0))
@@ -33,32 +37,22 @@ class Button:
             text_y = self.y
             text_w = text.get_width()
             text_h = text.get_height()
-            pg.draw.rect(self.surface, self.color, (text_x - 7, text_y - 7,
-                                                    text_w + 16, text_h + 12), 0)
-            # print(pg.draw.rect(self.surface, self.color, (text_x - 7, text_y - 7,
-            #                                               text_w + 16, text_h + 12), 0).width,
-            #       pg.draw.rect(self.surface, self.color, (text_x - 7, text_y - 7,
-            #                                               text_w + 16, text_h + 12), 0).height)
+            rect = pg.draw.rect(self.surface, self.color, (text_x - 7, text_y - 7,
+                                                           text_w + 16, text_h + 12), 0)
+            self.checkbox_obj = pg.Rect(rect.x, rect.y, rect.width, rect.height)
             self.surface.blit(text, (text_x, text_y))
 
     def update(self, event_object, others=None):
         if event_object.type == pg.MOUSEBUTTONDOWN:
             x, y = event_object.pos
             px, py, w, h = self.checkbox_obj
-            if px < x < px + w and py < y < py + w:
+            if px < x < px + w and py < y < py + h:
                 self.click = True
         if event_object.type == pg.MOUSEBUTTONUP:
             x, y = event_object.pos
             px, py, w, h = self.checkbox_obj
-            if px < x < px + w and py < y < py + w:
-                if not self.checked and self.click:
-                    self.checked = True
-                    if others:
-                        for i in others:
-                            if i != self:
-                                i.checked = False
-                elif self.checked:
-                    self.checked = False
+            if px < x < px + w and py < y < py + h:
+                self.checked = not self.checked
 
     def is_checked(self):
         if self.checked is True:

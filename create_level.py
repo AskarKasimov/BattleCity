@@ -53,21 +53,20 @@ class Board:
         j1 = 0
         for i in range(self.left, self.height * self.cell_size, self.cell_size):
             for j in range(self.top, self.width * self.cell_size, self.cell_size):
-                if self.board[i1][j1] == 0:
+                if self.board[i1][j1] == 0 and not object:
                     for x in all_sprites:
                         if x.rect == (tile_width * i / self.cell_size, tile_height * j / self.cell_size, 50, 50):
                             x.kill()
                             break
                     pygame.draw.rect(screen, (255, 255, 255), (i, j, self.cell_size, self.cell_size), 1)
                     pygame.draw.rect(screen, (0, 0, 0), (i + 1, j + 1, self.cell_size - 2, self.cell_size - 2), 0)
-                if self.board[i1][j1] == 1:
+                if self.board[i1][j1] >= 1 and object:
                     check = False
                     for x in all_sprites:
                         if x.rect == (tile_width * i / self.cell_size, tile_height * j / self.cell_size, 50, 50):
                             check = True
                     if not check:
-                        if object:
-                            all_sprites.add(Tile(object, i / self.cell_size, j / self.cell_size))
+                        all_sprites.add(Tile(object, i / self.cell_size, j / self.cell_size))
 
                 j1 += 1
             i1 += 1
@@ -81,13 +80,16 @@ class Board:
         else:
             return None
 
-    def on_click(self, cell_coords, object):
+    def on_click(self, cell_coords, object=None):
         if cell_coords:
             x, y = cell_coords
-            self.board[y][x] = (self.board[y][x] + 1) % 2
+            if object:
+                self.board[y][x] = list(tile_images.keys()).index(object) + 1
+            else:
+                self.board[y][x] = 0
             self.render(screen, object)
 
-    def get_click(self, mouse_pos, object):
+    def get_click(self, mouse_pos, object=None):
         cell = self.get_cell(mouse_pos)
         self.on_click(cell, object)
 
@@ -105,6 +107,14 @@ if __name__ == '__main__':
     checkbox_list = list()
     checkbox_list.append(checkbox_korobka)
     checkbox_list.append(checkbox_stena)
+
+    clock = pygame.time.Clock()
+
+    button_clear = button.Button(screen, 790, 250, 93, 28, "Сбросить")
+    button_save = button.Button(screen, 915, 250, 102, 28, "Сохранить")
+
+    MYEVENTTYPE = pygame.USEREVENT + 1
+    pygame.time.set_timer(MYEVENTTYPE, 7)
     while running:
         # отрисовка кнопок и текста
         font = pygame.font.Font(None, 50)
@@ -129,8 +139,7 @@ if __name__ == '__main__':
         text_y = 148
         screen.blit(text, (text_x, text_y))
 
-        button_clear = button.Button(screen, 790, 250, 93, 28, "Сбросить")
-        button_save = button.Button(screen, 915, 250, 102, 28, "Сохранить")
+
         #
 
         for event in pygame.event.get():
@@ -138,19 +147,46 @@ if __name__ == '__main__':
                 running = False
                 pygame.quit()
                 quit()
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if pygame.mouse.get_pressed()[0]:
                 for btn in checkbox_list:
                     if btn.checked:
-                        board.get_click(event.pos, btn.name)
+                        try:
+                            board.get_click(event.pos, btn.name)
+                        except AttributeError:
+                            pass
+            if pygame.mouse.get_pressed()[2]:
+                for btn in checkbox_list:
+                    if btn.checked:
+                        try:
+                            board.get_click(event.pos)
+                        except AttributeError:
+                            pass
+
+            if event.type == MYEVENTTYPE and button_save.is_checked():
+                with open("levels/" + str(len(os.listdir(path="levels")) + 1) + ".txt", "w") as file:
+                    for i in range(len(board.board)):
+                        for j in range(len(board.board[i])):
+                            file.write(str(board.board[j][i]))
+                        file.write("\n")
+                button_save.checked = False
+
+            if event.type == MYEVENTTYPE and button_clear.is_checked():
+                for i in range(len(board.board)):
+                    for j in range(len(board.board[i])):
+                        board.board[j][i] = 0
+                all_sprites.clear(screen, screen)
+                board.render(screen)
+                button_clear.checked = False
+
             checkbox_stena.update(event, checkbox_list)
             checkbox_korobka.update(event, checkbox_list)
             button_save.update(event)
             button_clear.update(event)
             # print(board.board)
-
         all_sprites.draw(screen)
         checkbox_stena.render()
         checkbox_korobka.render()
         button_clear.render()
         button_save.render()
         pygame.display.flip()
+        clock.tick(60)
