@@ -5,7 +5,7 @@ import checkbox
 import button
 
 
-def load_image(name, colorkey=None):
+def load_image(name):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
@@ -15,9 +15,10 @@ def load_image(name, colorkey=None):
 
 
 tile_images = {
-    'wall': load_image('wall.png'),
-    'box': load_image("box.png"),
-    'grass': load_image('grass.png')
+    'Кирпичная стена': load_image('wall.png'),
+    'Разрушаемая коробка': load_image("box.png"),
+    'Трава': load_image('grass.png'),
+    'Вода': load_image('newwoter.png')
 }
 tile_width = tile_height = 50
 
@@ -31,8 +32,6 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Board:
-    colors = ["black", "white"]
-
     # создание поля
     def __init__(self, width, height):
         self.width = width
@@ -61,13 +60,14 @@ class Board:
                             break
                     pygame.draw.rect(screen, (255, 255, 255), (i, j, self.cell_size, self.cell_size), 1)
                     pygame.draw.rect(screen, (0, 0, 0), (i + 1, j + 1, self.cell_size - 2, self.cell_size - 2), 0)
-                if self.board[i1][j1] >= 1:
+                else:
                     check = False
                     for x in all_sprites:
                         if x.rect == (tile_width * i / self.cell_size, tile_height * j / self.cell_size, 50, 50):
                             check = True
                     if not check:
-                        all_sprites.add(Tile(list(tile_images.keys())[self.board[i1][j1] - 1], i / self.cell_size, j / self.cell_size))
+                        all_sprites.add(Tile(list(tile_images.keys())[self.board[i1][j1] - 1], i / self.cell_size,
+                                             j / self.cell_size))
 
                 j1 += 1
             i1 += 1
@@ -84,9 +84,9 @@ class Board:
     def on_click(self, cell_coords, object=None):
         if cell_coords:
             x, y = cell_coords
-            if object:
+            if object and self.board[y][x] == 0:
                 self.board[y][x] = list(tile_images.keys()).index(object) + 1
-            else:
+            elif not object:
                 self.board[y][x] = 0
             self.render(screen)
 
@@ -103,20 +103,16 @@ if __name__ == '__main__':
     running = True
     board.render(screen)
 
-    # checkbox_stena = checkbox.Checkbox(screen, 750, 100, 12, 12, "wall", activated=True)
-    # checkbox_korobka = checkbox.Checkbox(screen, 750, 150, 12, 12, "box")
     checkbox_list = list()
     x = 100
     for i in range(len(tile_images)):
         checkbox_list.append(checkbox.Checkbox(screen, 750, x, 12, 12, list(tile_images.keys())[i]))
         x += 50
-    # checkbox_list.append(checkbox_korobka)
-    # checkbox_list.append(checkbox_stena)
-
+    checkbox_list[0].checked = True
     clock = pygame.time.Clock()
 
-    button_clear = button.Button(screen, 790, 250, 93, 28, "Сбросить")
-    button_save = button.Button(screen, 915, 250, 102, 28, "Сохранить")
+    button_clear = button.Button(screen, 790, 100 + 50 * len(tile_images), "Сбросить")
+    button_save = button.Button(screen, 915, 100 + 50 * len(tile_images), "Сохранить")
 
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 7)
@@ -130,23 +126,16 @@ if __name__ == '__main__':
         text_h = text.get_height()
         screen.blit(text, (text_x, text_y))
         pygame.draw.rect(screen, (143, 20, 2), (text_x - 10, text_y - 10,
-                                               text_w + 20, text_h + 20), 3)
-
-        font = pygame.font.Font(None, 30)
-        text = font.render("Кирпичная стена", False, (143, 20, 2))
-        text_x = 770
-        text_y = 96
-        screen.blit(text, (text_x, text_y))
-
-        font = pygame.font.Font(None, 30)
-        text = font.render("Разрушаемая коробка", False, (143, 20, 2))
-        text_x = 770
-        text_y = 148
-        screen.blit(text, (text_x, text_y))
-
-
+                                                text_w + 20, text_h + 20), 3)
+        x = 96
+        for i in tile_images.keys():
+            font = pygame.font.Font(None, 30)
+            text = font.render(i, False, (143, 20, 2))
+            text_x = 770
+            text_y = x
+            screen.blit(text, (text_x, text_y))
+            x += 50
         #
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -184,15 +173,10 @@ if __name__ == '__main__':
                 button_clear.checked = False
 
             [x.update(event, checkbox_list) for x in checkbox_list]
-            # checkbox_stena.update(event, checkbox_list)
-            # checkbox_korobka.update(event, checkbox_list)
             button_save.update(event)
             button_clear.update(event)
-            # print(board.board)
         all_sprites.draw(screen)
         [x.render() for x in checkbox_list]
-        # checkbox_stena.render()
-        # checkbox_korobka.render()
         button_clear.render()
         button_save.render()
         pygame.display.flip()
