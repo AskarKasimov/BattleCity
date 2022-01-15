@@ -16,7 +16,8 @@ def load_image(name, colorkey=None):
 
 tile_images = {
     'wall': load_image('wall.png'),
-    'box': load_image("box.png")
+    'box': load_image("box.png"),
+    'grass': load_image('grass.png')
 }
 tile_width = tile_height = 50
 
@@ -48,25 +49,25 @@ class Board:
         self.top = top
         self.cell_size = cell_size
 
-    def render(self, screen, object=None):
+    def render(self, screen):
         i1 = 0
         j1 = 0
         for i in range(self.left, self.height * self.cell_size, self.cell_size):
             for j in range(self.top, self.width * self.cell_size, self.cell_size):
-                if self.board[i1][j1] == 0 and not object:
+                if self.board[i1][j1] == 0:
                     for x in all_sprites:
                         if x.rect == (tile_width * i / self.cell_size, tile_height * j / self.cell_size, 50, 50):
                             x.kill()
                             break
                     pygame.draw.rect(screen, (255, 255, 255), (i, j, self.cell_size, self.cell_size), 1)
                     pygame.draw.rect(screen, (0, 0, 0), (i + 1, j + 1, self.cell_size - 2, self.cell_size - 2), 0)
-                if self.board[i1][j1] >= 1 and object:
+                if self.board[i1][j1] >= 1:
                     check = False
                     for x in all_sprites:
                         if x.rect == (tile_width * i / self.cell_size, tile_height * j / self.cell_size, 50, 50):
                             check = True
                     if not check:
-                        all_sprites.add(Tile(object, i / self.cell_size, j / self.cell_size))
+                        all_sprites.add(Tile(list(tile_images.keys())[self.board[i1][j1] - 1], i / self.cell_size, j / self.cell_size))
 
                 j1 += 1
             i1 += 1
@@ -87,7 +88,7 @@ class Board:
                 self.board[y][x] = list(tile_images.keys()).index(object) + 1
             else:
                 self.board[y][x] = 0
-            self.render(screen, object)
+            self.render(screen)
 
     def get_click(self, mouse_pos, object=None):
         cell = self.get_cell(mouse_pos)
@@ -102,11 +103,15 @@ if __name__ == '__main__':
     running = True
     board.render(screen)
 
-    checkbox_stena = checkbox.Checkbox(screen, 750, 100, 12, 12, "wall", activated=True)
-    checkbox_korobka = checkbox.Checkbox(screen, 750, 150, 12, 12, "box")
+    # checkbox_stena = checkbox.Checkbox(screen, 750, 100, 12, 12, "wall", activated=True)
+    # checkbox_korobka = checkbox.Checkbox(screen, 750, 150, 12, 12, "box")
     checkbox_list = list()
-    checkbox_list.append(checkbox_korobka)
-    checkbox_list.append(checkbox_stena)
+    x = 100
+    for i in range(len(tile_images)):
+        checkbox_list.append(checkbox.Checkbox(screen, 750, x, 12, 12, list(tile_images.keys())[i]))
+        x += 50
+    # checkbox_list.append(checkbox_korobka)
+    # checkbox_list.append(checkbox_stena)
 
     clock = pygame.time.Clock()
 
@@ -178,14 +183,16 @@ if __name__ == '__main__':
                 board.render(screen)
                 button_clear.checked = False
 
-            checkbox_stena.update(event, checkbox_list)
-            checkbox_korobka.update(event, checkbox_list)
+            [x.update(event, checkbox_list) for x in checkbox_list]
+            # checkbox_stena.update(event, checkbox_list)
+            # checkbox_korobka.update(event, checkbox_list)
             button_save.update(event)
             button_clear.update(event)
             # print(board.board)
         all_sprites.draw(screen)
-        checkbox_stena.render()
-        checkbox_korobka.render()
+        [x.render() for x in checkbox_list]
+        # checkbox_stena.render()
+        # checkbox_korobka.render()
         button_clear.render()
         button_save.render()
         pygame.display.flip()
