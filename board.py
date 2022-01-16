@@ -71,7 +71,9 @@ class Board:
     def on_click(self, cell_coords, object=None):
         if cell_coords:
             x, y = cell_coords
-            if object and self.board[y][x] == 0:
+            if object == "Точка спавна" and all([i.count(list(self.tile_images.keys()).index(object) + 1) == 0 for i in self.board]):
+                self.board[y][x] = list(self.tile_images.keys()).index(object) + 1
+            elif object and object != "Точка спавна" and self.board[y][x] == 0:
                 self.board[y][x] = list(self.tile_images.keys()).index(object) + 1
             elif not object:
                 self.board[y][x] = 0

@@ -15,15 +15,17 @@ def load_image(name):
     return image
 
 
-if __name__ == '__main__':
-    tile_images = {
-        'Кирпичная стена': load_image('wall.png'),
-        'Разрушаемая коробка': load_image("box.png"),
-        'Трава': load_image('grass.png'),
-        'Вода': load_image('newwoter.png')
-    }
+tile_images = {
+    'Кирпичная стена': load_image('wall.png'),
+    'Разрушаемая коробка': load_image("box.png"),
+    'Трава': load_image('grass.png'),
+    'Вода': load_image('newwoter.png'),
+    "Точка спавна": load_image('spawn.png')
+}
 
-    tile_width = tile_height = 50
+tile_width = tile_height = 50
+
+if __name__ == '__main__':
     pygame.init()
     all_sprites = pygame.sprite.Group()
     screen = pygame.display.set_mode((1100, 700))

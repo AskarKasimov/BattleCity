@@ -2,6 +2,7 @@ import pygame
 import sys
 import os
 from board import Board
+from create_level import tile_width, tile_height, tile_images
 
 
 def load_image(name):
@@ -98,29 +99,31 @@ class Shot(pygame.sprite.Sprite):
 
 
 if __name__ == '__main__':
-    tile_images = {
-        'Кирпичная стена': load_image('wall.png'),
-        'Разрушаемая коробка': load_image("box.png"),
-        'Трава': load_image('grass.png'),
-        'Вода': load_image('newwoter.png')
-    }
-    tile_width = tile_height = 50
     is_collide_up, is_collide_down, is_collide_left, is_collide_right = False, False, False, False
     pygame.init()
     size = width, height = 700, 700
     screen = pygame.display.set_mode(size)
+
     all_sprites = pygame.sprite.Group()
     shots = pygame.sprite.Group()
     tanks = pygame.sprite.Group()
     running = True
+
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 10)
-    tank = Tank((width - load_image("tank.png").get_width()) / 2, (height - load_image("tank.png").get_height()) / 2)
+
+    board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen, pattern="1.txt")
+    board.render()
+    tank = None
+    for i in range(len(board.board)):
+        for j in range(len(board.board[i])):
+            if board.board[i][j] == list(tile_images.keys()).index("Точка спавна") + 1:
+                tank = Tank(i * tile_width, j * tile_height)
+                board.board[i][j] = 0
+                board.render()
+    tank = Tank((width - load_image("tank.png").get_width()) / 2, (height - load_image("tank.png").get_height()) / 2) if not tank else tank
     tanks.add(tank)
     pos = "up"
-    board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen, pattern="8.txt")
-    board.render()
-    all_sprites.remove(tank)
     while running:
         all_sprites.remove(tank)
         screen.fill((0, 0, 0))
