@@ -17,37 +17,29 @@ class Tank(pygame.sprite.Sprite):
     image = load_image("tank.png")
 
     def __init__(self, x, y):
-        super().__init__(all_sprites)
+        super().__init__(tanks)
         self.image = Tank.image
-        self.rect = pygame.Rect(x, y, self.image.get_width() + x, self.image.get_height() + y)
+        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
         self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         global is_collide_up, is_collide_down, is_collide_left, is_collide_right
-        for i in all_sprites:
-            if pygame.sprite.collide_mask(self, i):
-                is_collide_up = True
-                break
-        else:
-            is_collide_up = False
-        for i in all_sprites:
-            if pygame.sprite.collide_mask(self, i):
-                is_collide_down = True
-                break
-        else:
-            is_collide_down = False
-        for i in all_sprites:
-            if pygame.sprite.collide_mask(self, i):
-                is_collide_left = True
-                break
-        else:
-            is_collide_left = False
-        for i in all_sprites:
-            if pygame.sprite.collide_mask(self, i):
-                is_collide_right = True
-                break
+        if any([pygame.rect.Rect(self.rect.x + 1, self.rect.y, self.rect.width, self.rect.height).colliderect(i.rect) for i in all_sprites]):
+            is_collide_right = True
         else:
             is_collide_right = False
+        if any([pygame.rect.Rect(self.rect.x, self.rect.y + 1, self.rect.width, self.rect.height).colliderect(i.rect) for i in all_sprites]):
+            is_collide_down = True
+        else:
+            is_collide_down = False
+        if any([pygame.rect.Rect(self.rect.x - 1, self.rect.y, self.rect.width, self.rect.height).colliderect(i.rect) for i in all_sprites]):
+            is_collide_left = True
+        else:
+            is_collide_left = False
+        if any([pygame.rect.Rect(self.rect.x, self.rect.y - 1, self.rect.width, self.rect.height).colliderect(i.rect) for i in all_sprites]):
+            is_collide_up = True
+        else:
+            is_collide_up = False
 
 
 class Wall(pygame.sprite.Sprite):
@@ -66,43 +58,43 @@ class Wall(pygame.sprite.Sprite):
 class Shot(pygame.sprite.Sprite):
     image = load_image("shot.jpg")
 
-    def __init__(self):
-        super().__init__(all_sprites)
-        global pos
+    def __init__(self, pos):
+        super().__init__(shots)
+        self.pos = pos
         self.image = Shot.image
         self.vx = 0
         self.vy = 0
-        if pos == "up":
-            self.rect = pygame.Rect(tank.rect.x + 10, tank.rect.y - 10, self.image.get_width() + tank.rect.x, self.image.get_height() + tank.rect.y)
+        if self.pos == "up":
+            self.rect = pygame.Rect(tank.rect.x + 10, tank.rect.y - 10, self.image.get_width(), self.image.get_height())
             Shot.image = pygame.transform.rotate(load_image("shot.jpg"), 90)
             self.vy = -3
-        if pos == "down":
-            self.rect = pygame.Rect(tank.rect.x + 10, tank.rect.y + 30, self.image.get_width() + tank.rect.x, self.image.get_height() + tank.rect.y)
+        if self.pos == "down":
+            self.rect = pygame.Rect(tank.rect.x + 10, tank.rect.y + 30, self.image.get_width(), self.image.get_height())
             Shot.image = pygame.transform.rotate(load_image("shot.jpg"), -90)
             self.vy = 3
-        if pos == "left":
-            self.rect = pygame.Rect(tank.rect.x - 10, tank.rect.y + 10, self.image.get_width() + tank.rect.x, self.image.get_height() + tank.rect.y)
+        if self.pos == "left":
+            self.rect = pygame.Rect(tank.rect.x - 10, tank.rect.y + 10, self.image.get_width(), self.image.get_height())
             Shot.image = pygame.transform.rotate(load_image("shot.jpg"), 180)
             self.vx = -3
-        if pos == "right":
-            self.rect = pygame.Rect(tank.rect.x + 30, tank.rect.y + 10, self.image.get_width() + tank.rect.x, self.image.get_height() + tank.rect.y)
+        if self.pos == "right":
+            self.rect = pygame.Rect(tank.rect.x + 30, tank.rect.y + 10, self.image.get_width(), self.image.get_height())
             Shot.image = pygame.transform.rotate(load_image("shot.jpg"), 0)
             self.vx = 3
-        self.mask = pygame.mask.from_surface(self.image)
 
-    # def update(self):
-    #     self.rect = self.rect.move(self.vx, self.vy)
-    #     if pygame.sprite.spritecollideany(self, borders_up) or pygame.sprite.spritecollideany(self, borders_down)\
-    #             or pygame.sprite.spritecollideany(self, borders_left) or pygame.sprite.spritecollideany(self, borders_right):
-    #         """if pygame.sprite.spritecollideany(self, borders_up):
-    #             print(pygame.sprite.spritecollideany(self, borders_up).rect)
-    #         if pygame.sprite.spritecollideany(self, borders_down):
-    #             print(pygame.sprite.spritecollideany(self, borders_down).rect)
-    #         if pygame.sprite.spritecollideany(self, borders_right):
-    #             print(pygame.sprite.spritecollideany(self, borders_right).rect)
-    #         if pygame.sprite.spritecollideany(self, borders_left):
-    #             print(pygame.sprite.spritecollideany(self, borders_left).rect)"""
-    #         self.kill()
+    def update(self):
+        for i in all_sprites:
+            if self.rect.colliderect(i.rect):
+                self.kill()
+        if self.pos == "up":
+            self.rect.y -= 2
+        if self.pos == "down":
+            self.rect.y += 2
+        if self.pos == "left":
+            self.rect.x -= 2
+        if self.pos == "right":
+            self.rect.x += 2
+        if self.rect.x < -25 or self.rect.x > width + 25 or self.rect.y < -25 or self.rect.y > height + 25:
+            self.kill()
 
 
 if __name__ == '__main__':
@@ -118,60 +110,47 @@ if __name__ == '__main__':
     size = width, height = 700, 700
     screen = pygame.display.set_mode(size)
     all_sprites = pygame.sprite.Group()
-    # borders_up = pygame.sprite.Group()
-    # borders_down = pygame.sprite.Group()
-    # borders_left = pygame.sprite.Group()
-    # borders_right = pygame.sprite.Group()
     shots = pygame.sprite.Group()
     tanks = pygame.sprite.Group()
-    # borders_up.add(Wall(0, 0, True), Wall(150, 0, True), Wall(300, 0, True), Wall(450, 0, True))
-    # borders_down.add(Wall(0, 570, True), Wall(150, 570, True), Wall(300, 570, True), Wall(450, 570, True))
-    # borders_left.add(Wall(0, 0, False), Wall(0, 150, False), Wall(0, 300, False), Wall(0, 450, False))
-    # borders_right.add(Wall(570, 0, False), Wall(570, 150, False), Wall(570, 300, False), Wall(570, 450, False))
     running = True
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 10)
     tank = Tank((width - load_image("tank.png").get_width()) / 2, (height - load_image("tank.png").get_height()) / 2)
     tanks.add(tank)
     pos = "up"
-    board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen, pattern="3.txt")
+    board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen, pattern="8.txt")
     board.render()
-    # for i in all_sprites:
-    #     # print(pygame.sprite.collide_rect(tank, i))
-    #     # print(i.rect.x)
-    #     # print(i.rect.y)
-    #     print(tank.rect.colliderect(i.rect))
-    #     if tank.rect.colliderect(i.rect):
-    #         all_sprites.remove(i)
+    all_sprites.remove(tank)
     while running:
+        all_sprites.remove(tank)
         screen.fill((0, 0, 0))
         all_sprites.draw(screen)
         tanks.draw(screen)
+        shots.draw(screen)
         for event in pygame.event.get():
             keys = pygame.key.get_pressed()
-            pressed = pygame.mouse.get_pressed()
             if event.type == pygame.QUIT:
                 running = False
-            if keys[pygame.K_LEFT] and not pygame.sprite.spritecollide(tank, all_sprites, False) and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+            # TODO: нормальное перемещение
+            if keys[pygame.K_LEFT] and not is_collide_left and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
                 pos = "left"
                 tank.rect.x -= 1
                 tank.image = pygame.transform.rotate(load_image("tank.png"), 90)
-            if keys[pygame.K_RIGHT] and not pygame.sprite.spritecollide(tank, all_sprites, False) and not(keys[pygame.K_LEFT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+            if keys[pygame.K_RIGHT] and not is_collide_right and not(keys[pygame.K_LEFT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
                 pos = "right"
                 tank.rect.x += 1
                 tank.image = pygame.transform.rotate(load_image("tank.png"), -90)
-            if keys[pygame.K_UP] and not pygame.sprite.spritecollide(tank, all_sprites, False) and not(keys[pygame.K_RIGHT] or keys[pygame.K_LEFT] or keys[pygame.K_DOWN]):
+            if keys[pygame.K_UP] and not is_collide_up and not(keys[pygame.K_RIGHT] or keys[pygame.K_LEFT] or keys[pygame.K_DOWN]):
                 pos = "up"
                 tank.rect.y -= 1
                 tank.image = pygame.transform.rotate(load_image("tank.png"), 0)
-            if keys[pygame.K_DOWN] and not pygame.sprite.spritecollide(tank, all_sprites, False) and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_LEFT]):
+            if keys[pygame.K_DOWN] and not is_collide_down and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_LEFT]):
                 pos = "down"
                 tank.rect.y += 1
                 tank.image = pygame.transform.rotate(load_image("tank.png"), 180)
             if keys[pygame.K_SPACE]:
                 if len(shots) == 0:
-                    shot = Shot()
-                    all_sprites.add(shot)
+                    shot = Shot(pos)
                     shots.add(shot)
             if event.type == MYEVENTTYPE:
                 for x in shots:

@@ -23,6 +23,9 @@ class Board:
                     line = line.replace("\n", "")
                     self.board.append(list([int(x) for x in line]))
                     line = file.readline()
+            for i in range(len(self.board)):
+                for j in range(len(self.board[i])):
+                    self.board[i][j], self.board[j][i] = self.board[i][j], self.board[j][i]
         else:
             self.board = [[0] * width for _ in range(height)]
 

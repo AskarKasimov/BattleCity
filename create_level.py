@@ -88,7 +88,7 @@ if __name__ == '__main__':
                 with open("levels/" + str(len(os.listdir(path="levels")) + 1) + ".txt", "w") as file:
                     for i in range(len(board.board)):
                         for j in range(len(board.board[i])):
-                            file.write(str(board.board[j][i]))
+                            file.write(str(board.board[i][j]))
                         file.write("\n")
                 button_save.checked = False
 
