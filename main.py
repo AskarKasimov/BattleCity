@@ -9,6 +9,10 @@ from enemy_tank import EnemyTank
 from board import Board
 from create_level import tile_width, tile_height, tile_images
 from tank import Tank
+from button import Button
+
+clock = pygame.time.Clock()
+FPS = 50
 
 
 def load_image(name):
@@ -72,11 +76,36 @@ def shoot(shots1, pos1, tank_shoots):
         shots1.add(shot)
 
 
+def terminate():
+    pygame.quit()
+    sys.exit()
+
+
+def start_screen():
+    button_start = Button(screen, 325, 500, "Играть")
+    fon = pygame.transform.scale(load_image('start_screen.jpg'), (width, height))
+    screen.blit(fon, (0, 0))
+    MYEVENTTYPE = pygame.USEREVENT + 1
+    pygame.time.set_timer(MYEVENTTYPE, 7)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            if event.type == MYEVENTTYPE and button_start.is_checked():
+                return
+            button_start.update(event)
+        button_start.render()
+        pygame.display.flip()
+        clock.tick(FPS)
+
+
 if __name__ == '__main__':
 
     pygame.init()
     size = width, height = 700, 700
     screen = pygame.display.set_mode(size)
+
+    start_screen()
 
     all_sprites = pygame.sprite.Group()
     shots = pygame.sprite.Group()
