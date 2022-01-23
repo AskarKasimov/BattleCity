@@ -2,6 +2,7 @@ import os
 import sys
 import pygame
 from create_level import tile_width, tile_height, tile_images
+from shot import Shot
 
 
 def load_image(name):
@@ -59,3 +60,11 @@ class Tank(pygame.sprite.Sprite):
                 break
         else:
             self.is_collide_up = False
+
+    def shoot(self, shots1):
+        if self.pos == "up" and not self.is_collide_up or \
+                self.pos == "down" and not self.is_collide_down or \
+                self.pos == "left" and not self.is_collide_left \
+                or self.pos == "right" and not self.is_collide_right:
+            shot = Shot(self.pos, shots1, self)
+            shots1.add(shot)
