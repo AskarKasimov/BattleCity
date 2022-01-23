@@ -1,8 +1,14 @@
+import time
 import pygame
 import sys
 import os
+import threading
+import random
+
+from enemy_tank import EnemyTank
 from board import Board
 from create_level import tile_width, tile_height, tile_images
+from tank import Tank
 
 
 def load_image(name):
@@ -12,48 +18,6 @@ def load_image(name):
         sys.exit()
     image = pygame.image.load(fullname)
     return image
-
-
-class Tank(pygame.sprite.Sprite):
-    image = load_image("tank.png")
-
-    def __init__(self, x, y):
-        super().__init__(tanks)
-        self.image = Tank.image
-        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
-        self.mask = pygame.mask.from_surface(self.image)
-
-    def update(self):
-        global is_collide_up, is_collide_down, is_collide_left, is_collide_right
-        for i in all_sprites:
-            if pygame.rect.Rect(self.rect.x + 1, self.rect.y, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
-                is_collide_right = True
-                break
-        else:
-            is_collide_right = False
-        for i in all_sprites:
-            if pygame.rect.Rect(self.rect.x, self.rect.y + 1, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
-                is_collide_down = True
-                break
-        else:
-            is_collide_down = False
-        for i in all_sprites:
-            if pygame.rect.Rect(self.rect.x - 1, self.rect.y, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
-                is_collide_left = True
-                break
-        else:
-            is_collide_left = False
-
-        for i in all_sprites:
-            if pygame.rect.Rect(self.rect.x, self.rect.y - 1, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
-                is_collide_up = True
-                break
-        else:
-            is_collide_up = False
 
 
 class Shot(pygame.sprite.Sprite):
@@ -83,11 +47,10 @@ class Shot(pygame.sprite.Sprite):
             self.vx = 3
 
     def update(self):
-        for i in all_sprites:
-            if self.rect.colliderect(i.rect):
-                if board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] == list(tile_images.keys()).index("Разрушаемая коробка") + 1:
-                    i.kill()
-                self.kill()
+        if pygame.sprite.spritecollide(self, pygame.sprite.Group(list(filter(lambda x: board.board[x.rect[0] // tile_width][x.rect[1] // tile_height] == list(tile_images.keys()).index("Разрушаемая коробка") + 1, all_sprites))), True):
+            self.kill()
+        if pygame.sprite.spritecollide(self, pygame.sprite.Group(list(filter(lambda x: board.board[x.rect[0] // tile_width][x.rect[1] // tile_height] == list(tile_images.keys()).index("Кирпичная стена") + 1, all_sprites))), False):
+            self.kill()
         if self.pos == "up":
             self.rect.y -= 2
         if self.pos == "down":
@@ -100,8 +63,17 @@ class Shot(pygame.sprite.Sprite):
             self.kill()
 
 
+def shoot(shots1, pos1, tank_shoots):
+    if pos1 == "up" and not tank_shoots.is_collide_up or \
+            pos1 == "down" and not tank_shoots.is_collide_down or \
+            pos1 == "left" and not tank_shoots.is_collide_left \
+            or pos1 == "right" and not tank_shoots.is_collide_right:
+        shot = Shot(pos1)
+        shots1.add(shot)
+
+
 if __name__ == '__main__':
-    is_collide_up, is_collide_down, is_collide_left, is_collide_right = False, False, False, False
+
     pygame.init()
     size = width, height = 700, 700
     screen = pygame.display.set_mode(size)
@@ -114,18 +86,25 @@ if __name__ == '__main__':
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 10)
 
+    start = time.time()
+
     board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen, pattern="2.txt")
     board.render()
+
     tank = None
     for i in range(len(board.board)):
         for j in range(len(board.board[i])):
             if board.board[i][j] == list(tile_images.keys()).index("Точка спавна") + 1:
-                tank = Tank(i * tile_width, j * tile_height)
+                tank = Tank(i * tile_width, j * tile_height, board, all_sprites, tanks)
                 board.board[i][j] = 0
                 board.render()
-    tank = Tank((width - load_image("tank.png").get_width()) / 2, (height - load_image("tank.png").get_height()) / 2) if not tank else tank
+
+    tank = Tank((width - load_image("tankkk.png").get_width()) / 2, (height - load_image("tankkk.png").get_height()) / 2, board, all_sprites, tanks)\
+        if not tank else tank
     tanks.add(tank)
-    pos = "up"
+
+    bot_tank = EnemyTank(100, 100, board, all_sprites, tanks)
+    tanks.add(bot_tank)
     while running:
         all_sprites.remove(tank)
         screen.fill((0, 0, 0))
@@ -136,30 +115,29 @@ if __name__ == '__main__':
             keys = pygame.key.get_pressed()
             if event.type == pygame.QUIT:
                 running = False
-            # TODO: нормальное перемещение
-            if keys[pygame.K_LEFT] and not is_collide_left and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
-                pos = "left"
+            if keys[pygame.K_LEFT] and not tank.is_collide_left and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+                tank.pos = "left"
                 tank.rect.x -= 1
-                tank.image = pygame.transform.rotate(load_image("tank.png"), 90)
-            if keys[pygame.K_RIGHT] and not is_collide_right and not(keys[pygame.K_LEFT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
-                pos = "right"
+                tank.image = pygame.transform.rotate(load_image("tankkk.png"), 90)
+            if keys[pygame.K_RIGHT] and not tank.is_collide_right and not(keys[pygame.K_LEFT] or keys[pygame.K_UP] or keys[pygame.K_DOWN]):
+                tank.pos = "right"
                 tank.rect.x += 1
-                tank.image = pygame.transform.rotate(load_image("tank.png"), -90)
-            if keys[pygame.K_UP] and not is_collide_up and not(keys[pygame.K_RIGHT] or keys[pygame.K_LEFT] or keys[pygame.K_DOWN]):
-                pos = "up"
+                tank.image = pygame.transform.rotate(load_image("tankkk.png"), -90)
+            if keys[pygame.K_UP] and not tank.is_collide_up and not(keys[pygame.K_RIGHT] or keys[pygame.K_LEFT] or keys[pygame.K_DOWN]):
+                tank.pos = "up"
                 tank.rect.y -= 1
-                tank.image = pygame.transform.rotate(load_image("tank.png"), 0)
-            if keys[pygame.K_DOWN] and not is_collide_down and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_LEFT]):
-                pos = "down"
+                tank.image = pygame.transform.rotate(load_image("tankkk.png"), 0)
+            if keys[pygame.K_DOWN] and not tank.is_collide_down and not(keys[pygame.K_RIGHT] or keys[pygame.K_UP] or keys[pygame.K_LEFT]):
+                tank.pos = "down"
                 tank.rect.y += 1
-                tank.image = pygame.transform.rotate(load_image("tank.png"), 180)
-            if keys[pygame.K_SPACE]:
-                if len(shots) == 0:
-                    shot = Shot(pos)
-                    shots.add(shot)
+                tank.image = pygame.transform.rotate(load_image("tankkk.png"), 180)
+            if time.time() - start > 1 and keys[pygame.K_SPACE]:
+                threading.Thread(target=shoot, args=(shots, tank.pos, tank)).start()
+                start = time.time()
             if event.type == MYEVENTTYPE:
                 for x in shots:
                     x.update()
             tank.update()
+            bot_tank.update()
         pygame.display.flip()
     pygame.quit()
