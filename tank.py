@@ -22,32 +22,39 @@ class Tank(pygame.sprite.Sprite):
         self.image = Tank.image
         self.pos = "up"
         self.all_sprites = all_sprites_group
+        self.score = 0
         self.board = board
+
         self.is_collide_up = False
         self.is_collide_down = False
         self.is_collide_left = False
         self.is_collide_right = False
+
         self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
-        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self):
         for i in self.all_sprites:
             if pygame.rect.Rect(self.rect.x + 1, self.rect.y, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
+                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(
+                tile_images.keys()).index("Трава") + 1:
                 self.is_collide_right = True
                 break
         else:
             self.is_collide_right = False
+
         for i in self.all_sprites:
             if pygame.rect.Rect(self.rect.x, self.rect.y + 1, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
+                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(
+                tile_images.keys()).index("Трава") + 1:
                 self.is_collide_down = True
                 break
         else:
             self.is_collide_down = False
+
         for i in self.all_sprites:
             if pygame.rect.Rect(self.rect.x - 1, self.rect.y, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
+                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(
+                tile_images.keys()).index("Трава") + 1:
                 self.is_collide_left = True
                 break
         else:
@@ -55,7 +62,8 @@ class Tank(pygame.sprite.Sprite):
 
         for i in self.all_sprites:
             if pygame.rect.Rect(self.rect.x, self.rect.y - 1, self.rect.width, self.rect.height).colliderect(i.rect) and \
-                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(tile_images.keys()).index("Трава") + 1:
+                    self.board.board[i.rect[0] // tile_width][i.rect[1] // tile_height] != list(
+                tile_images.keys()).index("Трава") + 1:
                 self.is_collide_up = True
                 break
         else:
@@ -68,3 +76,6 @@ class Tank(pygame.sprite.Sprite):
                 or self.pos == "right" and not self.is_collide_right:
             shot = Shot(self.pos, shots1, self)
             shots1.add(shot)
+
+    def increase_score(self):
+        self.score += 100

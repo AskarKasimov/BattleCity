@@ -27,6 +27,7 @@ tile_width = tile_height = 50
 
 if __name__ == '__main__':
     pygame.init()
+    pygame.display.set_caption('PyTanks – Редактор уровней')
     all_sprites = pygame.sprite.Group()
     screen = pygame.display.set_mode((1100, 700))
     board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen)
@@ -46,26 +47,28 @@ if __name__ == '__main__':
 
     MYEVENTTYPE = pygame.USEREVENT + 1
     pygame.time.set_timer(MYEVENTTYPE, 7)
-    while running:
-        # отрисовка кнопок и текста
-        font = pygame.font.Font(None, 50)
-        text = font.render("Создание уровня", False, (143, 20, 2))
-        text_x = 745
-        text_y = 25
-        text_w = text.get_width()
-        text_h = text.get_height()
+
+    # отрисовка кнопок и текста
+    font = pygame.font.Font(None, 50)
+    text = font.render("Создание уровня", False, (143, 20, 2))
+    text_x = 745
+    text_y = 25
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    pygame.draw.rect(screen, (143, 20, 2), (text_x - 10, text_y - 10,
+                                            text_w + 20, text_h + 20), 3)
+    x = 96
+    for i in tile_images.keys():
+        font = pygame.font.Font(None, 30)
+        text = font.render(i, False, (143, 20, 2))
+        text_x = 770
+        text_y = x
         screen.blit(text, (text_x, text_y))
-        pygame.draw.rect(screen, (143, 20, 2), (text_x - 10, text_y - 10,
-                                                text_w + 20, text_h + 20), 3)
-        x = 96
-        for i in tile_images.keys():
-            font = pygame.font.Font(None, 30)
-            text = font.render(i, False, (143, 20, 2))
-            text_x = 770
-            text_y = x
-            screen.blit(text, (text_x, text_y))
-            x += 50
-        #
+        x += 50
+    #
+
+    while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
