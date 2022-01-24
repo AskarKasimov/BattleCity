@@ -4,6 +4,7 @@ import sys
 import os
 import threading
 import random
+import datetime as dt
 
 from enemy_tank import EnemyTank
 from board import Board
@@ -12,6 +13,7 @@ from tank import Tank
 from button import Button
 from shot import Shot
 
+start_time = dt.datetime.now()
 clock = pygame.time.Clock()
 FPS = 50
 score = 0
@@ -185,6 +187,18 @@ def the_end():
         clock.tick(FPS)
 
 
+def update_records():
+    finish_time = dt.datetime.now()
+    delta = finish_time - start_time
+    records_read = open("records.txt", "r", encoding="UTF-8").readlines()
+    record_point = max(tank.score, int(records_read[0].split()[3]))
+    delta = delta.seconds + delta.microseconds * 10**-6
+    record_time = min(delta, float(records_read[1].split()[3]))
+    records_write = open("records.txt", "w", encoding="UTF-8")
+    records_write.write("Текущий рекорд очков: " + str(record_point) + "\n" + "Текущий рекорд времени: " + str(record_time) + " секунд")
+
+
+
 def the_win():
     pygame.display.set_caption('PyTanks – Победа')
     button_start = Button(screen, 310, 650, "Закрыть")
@@ -195,6 +209,7 @@ def the_win():
     pygame.time.set_timer(MYEVENTTYPE, 7)
 
     font = pygame.font.Font(None, 50)
+    update_records()
     text = font.render("Счёт: " + str(tank.score), False, (143, 20, 2))
     text_x = width // 2 - text.get_width() // 2
     text_y = 500
