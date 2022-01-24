@@ -83,6 +83,9 @@ if __name__ == '__main__':
 
     bot_tank = EnemyTank(100, 100, board, all_sprites, tanks, tank, shots)
     tanks.add(bot_tank)
+
+    bot_tank2 = EnemyTank(500, 500, board, all_sprites, tanks, tank, shots)
+    tanks.add(bot_tank2)
     while running:
         all_sprites.remove(tank)
         screen.fill((0, 0, 0))
@@ -91,6 +94,7 @@ if __name__ == '__main__':
         shots.draw(screen)
         for event in pygame.event.get():
             threading.Thread(target=bot_tank.update).start()
+            threading.Thread(target=bot_tank2.update).start()
             keys = pygame.key.get_pressed()
             if event.type == pygame.QUIT:
                 running = False
