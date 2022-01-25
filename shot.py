@@ -13,6 +13,7 @@ def load_image(name):
     return image
 
 
+# выстрел кабум
 class Shot(pygame.sprite.Sprite):
     image = load_image("shot.png")
 
@@ -51,12 +52,12 @@ class Shot(pygame.sprite.Sprite):
 
         if pygame.sprite.spritecollide(self, pygame.sprite.Group(list(filter(
                 lambda x: board.board[x.rect[0] // tile_width][x.rect[1] // tile_height] == list(
-                        tile_images.keys()).index("Разрушаемая коробка") + 1, all_sprites))), True):
+                    tile_images.keys()).index("Разрушаемая коробка") + 1, all_sprites))), True):
             self.kill()
             destruction(explosions, self.rect.x - 15, self.rect.y - 10)
         if pygame.sprite.spritecollide(self, pygame.sprite.Group(list(filter(
                 lambda x: board.board[x.rect[0] // tile_width][x.rect[1] // tile_height] == list(
-                        tile_images.keys()).index("Кирпичная стена") + 1, all_sprites))), False):
+                    tile_images.keys()).index("Кирпичная стена") + 1, all_sprites))), False):
             self.kill()
             destruction(explosions, self.rect.x - 15, self.rect.y - 10)
         if self.pos == "up":
@@ -67,7 +68,9 @@ class Shot(pygame.sprite.Sprite):
             self.rect.x -= 2
         if self.pos == "right":
             self.rect.x += 2
-        if self.rect.x < -25 or self.rect.x > len(board.board) * tile_width + 25 or self.rect.y < -25 or self.rect.y > len(board.board[0]) * tile_height + 25:
+        if self.rect.x < -25 or self.rect.x > len(
+                board.board) * tile_width + 25 or self.rect.y < -25 or self.rect.y > len(
+            board.board[0]) * tile_height + 25:
             self.kill()
             destruction(explosions, self.rect.x - 15, self.rect.y - 10)
 
