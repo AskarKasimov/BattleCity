@@ -16,6 +16,7 @@ def load_image(name):
     return image
 
 
+# танк-бот (сам катается)
 class EnemyTank(Tank):
     def __init__(self, x, y, board, all_sprites_group, all_tanks_group, player, shots):
         super().__init__(x, y, board, all_sprites_group, all_tanks_group)
