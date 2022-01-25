@@ -1,6 +1,7 @@
 import pygame
 
 
+# боард это по-английский доска (поле в нашем случае)
 class Board:
     # создание поля
     def __init__(self, width, height, sprites, tile_width, tile_height, tile_images, screen, pattern=None):
@@ -42,7 +43,8 @@ class Board:
             for j in range(self.top, self.width * self.cell_size, self.cell_size):
                 if self.board[i1][j1] == 0:
                     for x in self.all_sprites:
-                        if x.rect == (self.tile_width * i / self.cell_size, self.tile_height * j / self.cell_size, 50, 50):
+                        if x.rect == (self.tile_width * i / self.cell_size,
+                                      self.tile_height * j / self.cell_size, 50, 50):
                             x.kill()
                             break
                     pygame.draw.rect(self.screen, (255, 255, 255), (i, j, self.cell_size, self.cell_size), 1)
@@ -50,11 +52,14 @@ class Board:
                 else:
                     check = False
                     for x in self.all_sprites:
-                        if x.rect == (self.tile_width * i / self.cell_size, self.tile_height * j / self.cell_size, 50, 50):
+                        if x.rect == (
+                        self.tile_width * i / self.cell_size, self.tile_height * j / self.cell_size, 50, 50):
                             check = True
                     if not check:
-                        self.all_sprites.add(Tile(list(self.tile_images.keys())[self.board[i1][j1] - 1], i / self.cell_size,
-                                             j / self.cell_size, self.all_sprites, self.tile_images, self.tile_width, self.tile_height))
+                        self.all_sprites.add(
+                            Tile(list(self.tile_images.keys())[self.board[i1][j1] - 1], i / self.cell_size,
+                                 j / self.cell_size, self.all_sprites, self.tile_images, self.tile_width,
+                                 self.tile_height))
 
                 j1 += 1
             i1 += 1
@@ -71,7 +76,8 @@ class Board:
     def on_click(self, cell_coords, object=None):
         if cell_coords:
             x, y = cell_coords
-            if object == "Точка спавна" and all([i.count(list(self.tile_images.keys()).index(object) + 1) == 0 for i in self.board]):
+            if object == "Точка спавна" and all(
+                    [i.count(list(self.tile_images.keys()).index(object) + 1) == 0 for i in self.board]):
                 self.board[y][x] = list(self.tile_images.keys()).index(object) + 1
             elif object and object != "Точка спавна" and self.board[y][x] == 0:
                 self.board[y][x] = list(self.tile_images.keys()).index(object) + 1
