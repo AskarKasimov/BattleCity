@@ -1,3 +1,7 @@
+#
+# создатель уровней
+#
+
 import pygame
 import os
 import sys
