@@ -14,6 +14,7 @@ def load_image(name):
     return image
 
 
+# танчик (управляется игроком)
 class Tank(pygame.sprite.Sprite):
     image = load_image("tankkk.png")
 
@@ -70,12 +71,8 @@ class Tank(pygame.sprite.Sprite):
             self.is_collide_up = False
 
     def shoot(self, shots1):
-        if self.pos == "up" and not self.is_collide_up or \
-                self.pos == "down" and not self.is_collide_down or \
-                self.pos == "left" and not self.is_collide_left \
-                or self.pos == "right" and not self.is_collide_right:
-            shot = Shot(self.pos, shots1, self)
-            shots1.add(shot)
+        shot = Shot(self.pos, shots1, self)
+        shots1.add(shot)
 
     def increase_score(self):
         self.score += 100
