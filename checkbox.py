@@ -2,9 +2,10 @@ import pygame
 from button import Button
 
 
+# класс чекбокса (кнопка с галочкой)
 class Checkbox(Button):
-    def __init__(self, surface, x, y, width, height, name, activated=False, color=(230, 230, 230)):
-        super().__init__(surface, x, y, name, activated, color)
+    def __init__(self, surface, x, y, width, height, name, activated=False, color=(230, 230, 230), isactive=True):
+        super().__init__(surface, x, y, name, activated, color, isactive)
         self.width = width
         self.height = height
         self.checkbox_obj = pygame.Rect(self.x, self.y, self.width, self.height)
@@ -20,7 +21,7 @@ class Checkbox(Button):
             pygame.draw.rect(self.surface, (0, 0, 0), self.checkbox_outline, 1)
 
     def update(self, event_object, others=None):
-        if event_object.type == pygame.MOUSEBUTTONUP:
+        if event_object.type == pygame.MOUSEBUTTONUP and self.active:
             x, y = event_object.pos
             px, py, w, h = self.checkbox_obj
             if px < x < px + w and py < y < py + h:
