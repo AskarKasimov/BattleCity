@@ -6,6 +6,8 @@ import threading
 import random
 import datetime as dt
 
+from Tools.scripts.pep384_macrocheck import dprint
+
 from enemy_tank import EnemyTank
 from board import Board
 from create_level import tile_width, tile_height, tile_images
@@ -192,10 +194,11 @@ def update_records():
     delta = finish_time - start_time
     records_read = open("records.txt", "r", encoding="UTF-8").readlines()
     record_point = max(tank.score, int(records_read[0].split()[3]))
-    delta = delta.seconds + delta.microseconds * 10**-6
+    delta = round(delta.seconds + delta.microseconds * 10**-6, 2)
     record_time = min(delta, float(records_read[1].split()[3]))
+
     records_write = open("records.txt", "w", encoding="UTF-8")
-    records_write.write("Текущий рекорд очков: " + str(record_point) + "\n" + "Текущий рекорд времени: " + str(record_time) + " секунд")
+    records_write.write("Текущий рекорд очков: " + str(record_point) + "\n" + "Текущий рекорд времени: " + str(record_time) + " сек.")
 
 
 
@@ -212,14 +215,19 @@ def the_win():
     update_records()
     text = font.render("Счёт: " + str(tank.score), False, (143, 20, 2))
     text_x = width // 2 - text.get_width() // 2
-    text_y = 500
+    text_y = 400
     screen.blit(text, (text_x, text_y))
 
     font = pygame.font.Font(None, 50)
     text = font.render("Вы выиграли!", False, (143, 20, 2))
+    records_read = open("records.txt", "r", encoding="UTF-8").readlines()
+    records1 = font.render(records_read[0].strip(), False, (143, 20, 2))
+    records2 = font.render(records_read[1].strip(), False, (143, 20, 2))
     text_x = width // 2 - text.get_width() // 2
     text_y = 350
     screen.blit(text, (text_x, text_y))
+    screen.blit(records1, (50, 500))
+    screen.blit(records2, (50, 550))
 
     while True:
         for event in pygame.event.get():
