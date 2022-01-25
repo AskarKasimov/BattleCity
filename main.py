@@ -1,3 +1,6 @@
+#
+# главное окно игры
+#
 import time
 import pygame
 import sys
@@ -6,14 +9,13 @@ import threading
 import random
 import datetime as dt
 
-from Tools.scripts.pep384_macrocheck import dprint
-
 from enemy_tank import EnemyTank
 from board import Board
 from create_level import tile_width, tile_height, tile_images
 from tank import Tank
 from button import Button
 from shot import Shot
+from checkbox import Checkbox
 
 start_time = dt.datetime.now()
 clock = pygame.time.Clock()
@@ -21,6 +23,7 @@ FPS = 50
 score = 0
 lvl = 1
 enemies = 1
+duo = False
 
 
 def load_image(name):
@@ -32,15 +35,20 @@ def load_image(name):
     return image
 
 
-def shoot(shots1, pos1, tank_shoots):
-    shot = Shot(pos1, shots1, tank_shoots)
-    shots1.add(shot)
+def shoot(shots1, tank_shoots):
+    if tank_shoots.pos == "up" and not tank_shoots.is_collide_up or \
+            tank_shoots.pos == "down" and not tank_shoots.is_collide_down or \
+            tank_shoots.pos == "left" and not tank_shoots.is_collide_left \
+            or tank_shoots.pos == "right" and not tank_shoots.is_collide_right:
+        shot = Shot(tank_shoots.pos, shots1, tank_shoots)
+        shots1.add(shot)
 
 
 def start_screen():
-    global lvl, enemies
+    global lvl, enemies, duo
     pygame.display.set_caption('PyTanks – Запуск')
     button_start = Button(screen, 325, 650, "Играть")
+    checkbox_duo = Checkbox(screen, 260, 570, 12, 12, "Играть вдвоём")
     button_left = Button(screen, 100, 350, "Предудыщий")
     button_right = Button(screen, 500, 350, "Следующий")
     button_less = Button(screen, 120, 500, "Меньше")
@@ -62,6 +70,12 @@ def start_screen():
     text_y = 450
     screen.blit(text, (text_x, text_y))
 
+    font = pygame.font.Font(None, 30)
+    text = font.render("Играть вдвоём", False, (143, 20, 2))
+    text_x = 280
+    text_y = 567
+    screen.blit(text, (text_x, text_y))
+
     font = pygame.font.Font(None, 40)
     text = font.render(str(lvl), False, (143, 20, 2))
     text_x = width // 2 - text.get_width() // 2
@@ -79,7 +93,26 @@ def start_screen():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == MYEVENTTYPE and checkbox_duo.is_checked():
+                button_more.active = False
+                button_less.active = False
+                font = pygame.font.Font(None, 40)
+                text = font.render(str(enemies), False, (0, 0, 0))
+                text_x = width // 2 - text.get_width() // 2
+                text_y = 500
+                screen.blit(text, (text_x, text_y))
+                enemies = 0
+            if not checkbox_duo.is_checked():
+                button_more.active = True
+                button_less.active = True
+
+                font = pygame.font.Font(None, 40)
+                text = font.render(str(enemies), False, (143, 20, 2))
+                text_x = width // 2 - text.get_width() // 2
+                text_y = 500
+                screen.blit(text, (text_x, text_y))
             if event.type == MYEVENTTYPE and button_start.is_checked():
+                duo = checkbox_duo.is_checked()
                 return
             if event.type == MYEVENTTYPE and button_right.is_checked():
                 if lvl < levels:
@@ -152,7 +185,9 @@ def start_screen():
             button_right.update(event)
             button_less.update(event)
             button_more.update(event)
+            checkbox_duo.update(event)
         button_start.render()
+        checkbox_duo.render()
         button_left.render()
         button_right.render()
         button_less.render()
@@ -194,15 +229,15 @@ def update_records():
     delta = finish_time - start_time
     records_read = open("records.txt", "r", encoding="UTF-8").readlines()
     record_point = max(tank.score, int(records_read[0].split()[3]))
-    delta = round(delta.seconds + delta.microseconds * 10**-6, 2)
+    delta = round(delta.seconds + delta.microseconds * 10 ** -6, 2)
     record_time = min(delta, float(records_read[1].split()[3]))
 
     records_write = open("records.txt", "w", encoding="UTF-8")
-    records_write.write("Текущий рекорд очков: " + str(record_point) + "\n" + "Текущий рекорд времени: " + str(record_time) + " сек.")
+    records_write.write(
+        "Текущий рекорд очков: " + str(record_point) + "\n" + "Текущий рекорд времени: " + str(record_time) + " сек.")
 
 
-
-def the_win():
+def the_win(wins="Игрок"):
     pygame.display.set_caption('PyTanks – Победа')
     button_start = Button(screen, 310, 650, "Закрыть")
     fon = pygame.transform.scale(load_image('start_screen.jpg'), (width, height))
@@ -262,13 +297,19 @@ if __name__ == '__main__':
     pygame.time.set_timer(MYEVENTTYPE, 10)
 
     start = time.time()
+    start2 = time.time()
 
     board = Board(14, 14, all_sprites, tile_width, tile_height, tile_images, screen, pattern=str(lvl) + ".txt")
     board.render()
 
     tank = None
+    second_player = None
     for i in range(len(board.board)):
         for j in range(len(board.board[i])):
+            if board.board[i][j] == 0 and duo:
+                second_player = Tank(i * tile_width, j * tile_height, board, all_sprites, tanks)
+                second_player.image = load_image("second.png")
+                duo = False
             if board.board[i][j] == list(tile_images.keys()).index("Точка спавна") + 1:
                 tank = Tank(i * tile_width, j * tile_height, board, all_sprites, tanks)
                 board.board[i][j] = 0
@@ -278,13 +319,15 @@ if __name__ == '__main__':
                 (height - load_image("tankkk.png").get_height()) / 2, board, all_sprites, tanks) \
         if not tank else tank
     tanks.add(tank)
-
+    if enemies == 0:
+        enemies = 1
     while len(tanks) <= enemies:
         first_filter = random.randint(0, len(board.board) - 1)
         if not len(list(filter(lambda x: x != 0, board.board[first_filter]))) == board.board[first_filter]:
             second_filter = random.randint(0, len(board.board[first_filter]) - 1)
             if board.board[first_filter][second_filter] == 0:
-                bot_tank = EnemyTank(first_filter * tile_width, second_filter * tile_height, board, all_sprites, tanks, tank, shots)
+                bot_tank = EnemyTank(first_filter * tile_width, second_filter * tile_height, board, all_sprites, tanks,
+                                     tank, shots)
                 tanks.add(bot_tank)
 
     while running:
@@ -326,20 +369,60 @@ if __name__ == '__main__':
                 tank.image = pygame.transform.rotate(load_image("tankkk.png"), 180)
 
             if time.time() - start > 1 and keys[pygame.K_SPACE]:
-                threading.Thread(target=shoot, args=(shots, tank.pos, tank)).start()
+                threading.Thread(target=shoot, args=(shots, tank)).start()
                 start = time.time()
+
+            if second_player:
+                if keys[pygame.K_a] and not second_player.is_collide_left and not (
+                        keys[pygame.K_d] or keys[pygame.K_w] or keys[pygame.K_s]):
+                    second_player.pos = "left"
+                    second_player.rect.x -= 1
+                    second_player.image = pygame.transform.rotate(load_image("second.png"), 90)
+
+                if keys[pygame.K_d] and not second_player.is_collide_right and not (
+                        keys[pygame.K_w] or keys[pygame.K_s] or keys[pygame.K_a]):
+                    second_player.pos = "right"
+                    second_player.rect.x += 1
+                    second_player.image = pygame.transform.rotate(load_image("second.png"), -90)
+
+                if keys[pygame.K_w] and not second_player.is_collide_up and not (
+                        keys[pygame.K_s] or keys[pygame.K_d] or keys[pygame.K_a]):
+                    second_player.pos = "up"
+                    second_player.rect.y -= 1
+                    second_player.image = pygame.transform.rotate(load_image("second.png"), 0)
+
+                if keys[pygame.K_s] and not second_player.is_collide_down and not (
+                        keys[pygame.K_w] or keys[pygame.K_a] or keys[pygame.K_d]):
+                    second_player.pos = "down"
+                    second_player.rect.y += 1
+                    second_player.image = pygame.transform.rotate(load_image("second.png"), 180)
+
+                if time.time() - start2 > 1 and keys[pygame.K_r]:
+                    threading.Thread(target=shoot, args=(shots, second_player)).start()
+                    start2 = time.time()
 
             if event.type == MYEVENTTYPE:
                 for x in shots:
                     x.update(all_sprites, board, explosions, tanks)
 
-            if pygame.sprite.spritecollide(tank, pygame.sprite.Group(list(filter(lambda x: x.host != tank, shots))), False):
+            if pygame.sprite.spritecollide(tank, pygame.sprite.Group(list(filter(lambda x: x.host != tank, shots))),
+                                           False) and not second_player:
                 running = False
                 the_end()
 
-            if len(tanks) == 1:
+            if len(tanks) == 1 and not second_player:
                 running = False
                 the_win()
+
+            if second_player and pygame.sprite.spritecollide(tank, pygame.sprite.Group(
+                    list(filter(lambda x: x.host == second_player, shots))), False):
+                running = False
+                the_win("Второй игрок")
+
+            if second_player and pygame.sprite.spritecollide(second_player, pygame.sprite.Group(
+                    list(filter(lambda x: x.host == tank, shots))), False):
+                running = False
+                the_win("Первый игрок")
 
             tank.update()
             for i in explosions:
