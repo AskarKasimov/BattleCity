@@ -254,7 +254,7 @@ def the_win(wins="Игрок"):
     screen.blit(text, (text_x, text_y))
 
     font = pygame.font.Font(None, 50)
-    text = font.render("Вы выиграли!", False, (143, 20, 2))
+    text = font.render(wins + " выиграл!", False, (143, 20, 2))
     records_read = open("records.txt", "r", encoding="UTF-8").readlines()
     records1 = font.render(records_read[0].strip(), False, (143, 20, 2))
     records2 = font.render(records_read[1].strip(), False, (143, 20, 2))
