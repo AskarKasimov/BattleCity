@@ -1,11 +1,13 @@
 # Запуск
 Установка зависимостей:
-
-```pip install -r requirements.txt```
+```
+pip install -r requirements.txt
+```
 
 Запуск:
-
-```python main.py```
+```
+python main.py
+```
 
 # Техническое задание
 - Режим PVE-сражений на время с заработком игровых очков
